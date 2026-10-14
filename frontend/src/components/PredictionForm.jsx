@@ -2,51 +2,62 @@ import { fields, sections } from "../data/fields";
 
 export default function PredictionForm({
   values,
+  formOptions,
   isLoading,
   onValueChange,
   onSubmit,
 }) {
+  const metadata = Object.fromEntries(formOptions.map((field) => [field.name, field]));
+
   return (
     <form onSubmit={onSubmit} noValidate>
       {sections.map((section) => (
-        <fieldset key={section}>
+        <fieldset key={section} disabled={isLoading}>
           <legend>{section}</legend>
           <div className="field-grid">
             {fields
               .filter((field) => field.section === section)
-              .map((field) => (
-                <label key={field.key} className="field">
-                  <span>{field.label}</span>
-                  {field.kind === "yesNo" ? (
-                    <select
-                      value={values[field.key]}
-                      onChange={(event) => onValueChange(field.key, event.target.value)}
-                      required
-                      disabled={isLoading}
-                    >
-                      <option value="">Select</option>
-                      <option value="1">Yes</option>
-                      <option value="0">No</option>
-                    </select>
-                  ) : (
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step={field.kind === "code" ? "1" : "any"}
-                      value={values[field.key]}
-                      onChange={(event) => onValueChange(field.key, event.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  )}
-                </label>
-              ))}
+              .map((field) => {
+                const option = metadata[field.key];
+                return (
+                  <label key={field.key} className="field">
+                    <span>{field.label}</span>
+                    {option?.type === "select" ? (
+                      <select
+                        name={field.key}
+                        value={values[field.key] ?? ""}
+                        onChange={(event) => onValueChange(field.key, event.target.value)}
+                        required
+                      >
+                        <option value="">Select an option</option>
+                        {option.options.map((choice) => (
+                          <option key={choice.value} value={String(choice.value)}>
+                            {choice.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        name={field.key}
+                        type="number"
+                        inputMode="decimal"
+                        min={option?.min}
+                        max={option?.max}
+                        step={option?.step ?? "any"}
+                        value={values[field.key] ?? ""}
+                        onChange={(event) => onValueChange(field.key, event.target.value)}
+                        required
+                      />
+                    )}
+                  </label>
+                );
+              })}
           </div>
         </fieldset>
       ))}
 
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? "Predicting…" : "Predict"}
+      <button type="submit" disabled={isLoading || formOptions.length !== fields.length}>
+        {isLoading ? "Working…" : "Save academic data & predict"}
       </button>
     </form>
   );

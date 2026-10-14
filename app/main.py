@@ -4,57 +4,18 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, Field
 
 from app.predictor import FEATURE_COLUMNS, InputValidationError, Predictor
+from app.feature_options import FEATURE_ORDER, build_form_fields
+from app.schemas import StudentInput, PredictionResponse
+from app.student_routes import router as student_router
+from app.dashboard_routes import router as dashboard_router
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-NumericValue = Annotated[float, Field(strict=True, allow_inf_nan=False)]
-
-
-class StudentInput(BaseModel):
-    """A single student's numeric feature values from the trained dataset."""
-
-    model_config = ConfigDict(populate_by_name=False, extra="forbid")
-
-    application_mode: NumericValue = Field(alias="Application mode")
-    course: NumericValue = Field(alias="Course")
-    previous_qualification: NumericValue = Field(alias="Previous qualification")
-    previous_qualification_grade: NumericValue = Field(
-        alias="Previous qualification (grade)"
-    )
-    admission_grade: NumericValue = Field(alias="Admission grade")
-    debtor: NumericValue = Field(alias="Debtor")
-    tuition_fees_up_to_date: NumericValue = Field(alias="Tuition fees up to date")
-    scholarship_holder: NumericValue = Field(alias="Scholarship holder")
-    age_at_enrollment: NumericValue = Field(alias="Age at enrollment")
-    curricular_units_1st_sem_enrolled: NumericValue = Field(
-        alias="Curricular units 1st sem (enrolled)"
-    )
-    curricular_units_1st_sem_evaluations: NumericValue = Field(
-        alias="Curricular units 1st sem (evaluations)"
-    )
-    curricular_units_1st_sem_approved: NumericValue = Field(
-        alias="Curricular units 1st sem (approved)"
-    )
-    curricular_units_1st_sem_grade: NumericValue = Field(
-        alias="Curricular units 1st sem (grade)"
-    )
-
-
-class PredictionResponse(BaseModel):
-    prediction: str
-    dropout_risk_percent: float | None = Field(
-        default=None,
-        description="Estimated dropout probability, not a guaranteed outcome.",
-    )
-
-
 predictor = Predictor(
     model_path=ROOT_DIR / "dropout_risk_model.pkl",
     data_path=ROOT_DIR / "new_student_dropout_data.csv",
@@ -62,8 +23,9 @@ predictor = Predictor(
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(application: FastAPI):
     predictor.load()
+    application.state.predictor = predictor
     yield
 
 
@@ -74,11 +36,14 @@ app = FastAPI(
     description="Predicts dropout or graduation using the saved Decision Tree model.",
 )
 
+app.include_router(student_router)
+app.include_router(dashboard_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT"],
     allow_headers=["Content-Type"],
 )
 
@@ -86,6 +51,12 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "healthy"}
+
+
+@app.get("/form-options")
+def form_options() -> list[dict]:
+    """Return input types, labels, and original numeric codes for all 13 fields."""
+    return build_form_fields()
 
 
 @app.post("/predict", response_model=PredictionResponse)
@@ -101,4 +72,4 @@ def predict(student: StudentInput) -> PredictionResponse:
     )
 
 
-assert len(FEATURE_COLUMNS) == 13
+assert list(FEATURE_COLUMNS) == list(FEATURE_ORDER), "Feature order mismatch"
