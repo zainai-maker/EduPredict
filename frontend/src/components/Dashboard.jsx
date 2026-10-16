@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
-
 function formattedDate(raw) {
   if (!raw) return "—";
   const date = new Date(raw);
@@ -13,7 +11,7 @@ function percent(value) {
   return value == null ? "—" : `${Number(value).toFixed(1)}%`;
 }
 
-export default function Dashboard({ onManageStudents }) {
+export default function Dashboard({ api, onManageStudents, showRecent }) {
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -24,14 +22,7 @@ export default function Dashboard({ onManageStudents }) {
     setLoading(true);
     setError("");
 
-    fetch(`${apiBaseUrl}/dashboard/summary`, { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) {
-          const body = await response.json().catch(() => ({}));
-          throw new Error(typeof body.detail === "string" ? body.detail : `HTTP ${response.status}`);
-        }
-        return response.json();
-      })
+    api("/dashboard/summary", { signal: controller.signal })
       .then((data) => {
         if (!controller.signal.aborted) setSummary(data);
       })
@@ -42,7 +33,7 @@ export default function Dashboard({ onManageStudents }) {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [refresh]);
+  }, [refresh, api]);
 
   const counts = summary
     ? [
@@ -135,7 +126,7 @@ export default function Dashboard({ onManageStudents }) {
             </article>
           </div>
 
-          <article className="edp-panel edp-history">
+          {showRecent && <article className="edp-panel edp-history">
             <div className="edp-panel-title">
               <div>
                 <h3>Recent predictions</h3>
@@ -171,7 +162,7 @@ export default function Dashboard({ onManageStudents }) {
                 </table>
               </div>
             )}
-          </article>
+          </article>}
         </>
       )}
     </section>

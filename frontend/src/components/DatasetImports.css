@@ -1,0 +1,16 @@
+.edp-datasets { display: grid; gap: 1rem; }
+.edp-datasets h2, .edp-datasets h3, .edp-datasets h4 { margin: 0 0 .5rem; }
+.edp-datasets > p { margin: 0 0 .5rem; color: #526575; }
+.edp-datasets-panel { border: 1px solid #d9e2eb; border-radius: .75rem; padding: 1rem; background: #fff; min-width: 0; }
+.edp-datasets-panel label { display: block; margin-bottom: .5rem; font-weight: 650; }
+.edp-datasets-panel input[type="file"] { display: block; max-width: 100%; margin-bottom: 1rem; }
+.edp-datasets-actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.edp-datasets-actions button:disabled { opacity: .55; cursor: not-allowed; }
+.edp-dataset-metrics { display: flex; flex-wrap: wrap; gap: .8rem; margin: .8rem 0 1.2rem; }
+.edp-dataset-metrics span { padding: .6rem .8rem; border: 1px solid #d9e2eb; border-radius: .5rem; }
+.edp-dataset-metrics strong { margin-right: .3rem; }
+.edp-dataset-scroll { width: 100%; overflow-x: auto; }
+.edp-dataset-scroll table { width: 100%; border-collapse: collapse; text-align: left; }
+.edp-dataset-scroll th, .edp-dataset-scroll td { padding: .65rem .6rem; border-bottom: 1px solid #e7ecf1; white-space: nowrap; }
+.edp-dataset-issues { max-height: 13rem; overflow-y: auto; padding-left: 1.5rem; overflow-wrap: anywhere; }
+.edp-dataset-error { color: #a32323; }

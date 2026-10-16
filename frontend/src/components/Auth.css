@@ -1,0 +1,11 @@
+/* Auth/admin additions; existing Phase 4 layout and styles remain intact. */
+.edp-auth { max-width: 470px; margin: 4rem auto; }
+.edp-auth form { display: grid; gap: 1rem; margin-top: 1.4rem; }
+.edp-topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.2rem; }
+.edp-topbar > button { white-space: nowrap; }
+.edp-academic-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.edp-academic-list > div { padding: .75rem; border-radius: .55rem; border: 1px solid #d9e2eb; }
+.edp-academic-list dt { font-size: .84rem; color: #526575; }
+.edp-academic-list dd { margin: .35rem 0 0; font-weight: 650; overflow-wrap: anywhere; }
+.edp-manage fieldset { margin: 1rem 0; }
+@media (max-width: 600px) { .edp-academic-list { grid-template-columns: 1fr; } .edp-topbar { flex-direction: column; } }
