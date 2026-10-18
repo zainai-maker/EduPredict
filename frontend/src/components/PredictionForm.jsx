@@ -10,9 +10,9 @@ export default function PredictionForm({
   const metadata = Object.fromEntries(formOptions.map((field) => [field.name, field]));
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form onSubmit={onSubmit} noValidate className="mt-0 space-y-4">
       {sections.map((section) => (
-        <fieldset key={section} disabled={isLoading}>
+        <fieldset key={section} disabled={isLoading} className="m-0 rounded-lg border border-[#D8DED6] bg-[#FCFDFC] p-4">
           <legend>{section}</legend>
           <div className="field-grid">
             {fields
@@ -56,9 +56,11 @@ export default function PredictionForm({
         </fieldset>
       ))}
 
-      <button type="submit" disabled={isLoading || formOptions.length !== fields.length}>
-        {isLoading ? "Working…" : "Save academic data & predict"}
-      </button>
+      <div className="flex justify-end border-t border-[#e5e9e3] pt-4">
+        <button type="submit" disabled={isLoading || formOptions.length !== fields.length} className="min-h-10 rounded-lg bg-[#123D2C] px-4 py-2 text-sm font-bold text-white hover:bg-[#0d3022] disabled:cursor-wait disabled:opacity-60">
+          {isLoading ? "Working…" : "Save academic data & predict"}
+        </button>
+      </div>
     </form>
   );
 }
